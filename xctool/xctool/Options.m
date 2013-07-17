@@ -213,7 +213,7 @@
     NSString *name = optionParts[0];
     NSString *outputFile = (optionParts.count > 1) ? optionParts[1] : @"-";
 
-    Reporter *reporter = [Reporter reporterWithName:name outputPath:outputFile options:self];
+    Reporter *reporter = [Reporter reporterWithName:name outputPath:outputFile];
 
     if (reporter == nil) {
       *errorMessage = [NSString stringWithFormat:@"No reporter with name '%@' found.", name];
@@ -224,7 +224,7 @@
   }
 
   if (self.reporters.count == 0) {
-    [self.reporters addObject:[Reporter reporterWithName:@"pretty" outputPath:@"-" options:self]];
+    [self.reporters addObject:[Reporter reporterWithName:@"pretty" outputPath:@"-"]];
   }
 
   return YES;
