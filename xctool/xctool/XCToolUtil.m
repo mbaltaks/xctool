@@ -105,8 +105,13 @@ static NSString *AbsoluteExecutablePath(void) {
 
 NSString *XCToolBasePath(void)
 {
-  return [[AbsoluteExecutablePath() stringByDeletingLastPathComponent]
-          stringByDeletingLastPathComponent];
+  if (IsRunningUnderTest()) {
+    // DYLD_LIBRARY_PATH happens to point at BUILT_PRODUCTS_DIR
+    return [[NSProcessInfo processInfo] environment][@"DYLD_LIBRARY_PATH"];
+  } else {
+    return [[AbsoluteExecutablePath() stringByDeletingLastPathComponent]
+            stringByDeletingLastPathComponent];
+  }
 }
 
 NSString *XCToolLibPath(void)
@@ -117,6 +122,11 @@ NSString *XCToolLibPath(void)
 NSString *XCToolLibExecPath(void)
 {
   return [XCToolBasePath() stringByAppendingPathComponent:@"libexec"];
+}
+
+NSString *XCToolReportersPath(void)
+{
+  return [XCToolBasePath() stringByAppendingPathComponent:@"reporters"];
 }
 
 NSString *XcodeDeveloperDirPath(void)
@@ -413,4 +423,14 @@ void PublishEventToReporters(NSArray *reporters, NSDictionary *event)
   for (id<EventSink> reporter in reporters) {
     [reporter publishDataForEvent:jsonData];
   }
+}
+
+NSArray *AvailableReporters()
+{
+  NSError *error = nil;
+  NSArray *contents = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:XCToolReportersPath()
+                                                                          error:&error];
+  NSCAssert(contents != nil,
+            @"Failed to read from reporters directory: %@", [error localizedFailureReason]);
+  return contents;
 }
